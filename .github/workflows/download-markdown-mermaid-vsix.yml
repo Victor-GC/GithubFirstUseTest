@@ -1,0 +1,31 @@
+name: Download Markdown Mermaid VSIX
+
+on:
+  pull_request:
+    paths:
+      - '.github/vsix-trigger.txt'
+
+permissions:
+  contents: read
+
+jobs:
+  download-vsix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and verify official VSIX
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='bierner.markdown-mermaid-1.32.1.vsix'
+          url='https://bierner.gallery.vsassets.io/_apis/public/gallery/publisher/bierner/extension/markdown-mermaid/1.32.1/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage'
+          curl --fail --location --retry 3 --output "$file" "$url"
+          echo '6c7f0905939f8f62a6e7fb5f6a24b3ae43a5da4394f97c1972e58ea54f625443  bierner.markdown-mermaid-1.32.1.vsix' | sha256sum --check
+          unzip -t "$file"
+
+      - name: Upload verified VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: bierner-markdown-mermaid-1.32.1
+          path: bierner.markdown-mermaid-1.32.1.vsix
+          if-no-files-found: error
+          retention-days: 1
